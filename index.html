@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rockwell Site Surveys | Customer Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blueprint: #16305c;
+    --blueprint-line: rgba(255,255,255,0.08);
+    --paper: #f4f1e9;
+    --flag-orange: #d9622a;
+    --ink: #16305c;
+    --muted: #7d8fae;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      repeating-linear-gradient(0deg, var(--blueprint-line) 0px, transparent 1px, transparent 32px, var(--blueprint-line) 33px),
+      repeating-linear-gradient(90deg, var(--blueprint-line) 0px, transparent 1px, transparent 32px, var(--blueprint-line) 33px),
+      var(--blueprint);
+    font-family: 'IBM Plex Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .rig {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .letterhead {
+    color: #eef2fb;
+    margin-bottom: 14px;
+  }
+
+  .letterhead .mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--flag-orange);
+    text-transform: uppercase;
+  }
+
+  .letterhead h1 {
+    font-size: 24px;
+    margin: 4px 0 2px;
+    font-weight: 600;
+  }
+
+  .letterhead p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .panel {
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 62vh;
+    min-height: 440px;
+  }
+
+  .thread {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .row { display: flex; gap: 10px; align-items: flex-end; }
+  .row.user { flex-direction: row-reverse; }
+
+  .ref {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    align-self: flex-start;
+    padding-bottom: 4px;
+    min-width: 42px;
+  }
+  .row.user .ref { text-align: right; }
+
+  .bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 3px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  .row.bot .bubble {
+    background: #ffffff;
+    border: 1px solid #d9d2bd;
+    color: #21283a;
+    border-bottom-left-radius: 0;
+  }
+
+  .row.user .bubble {
+    background: var(--flag-orange);
+    color: #fff;
+    border-bottom-right-radius: 0;
+  }
+
+  .thinking { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); padding: 0 20px 8px; }
+
+  form {
+    display: flex;
+    border-top: 1px solid #d9d2bd;
+    background: #fff;
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    padding: 14px 16px;
+    font-size: 14.5px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    outline: none;
+    background: transparent;
+  }
+
+  button {
+    border: none;
+    background: var(--ink);
+    color: #fff;
+    padding: 0 22px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  button:disabled { opacity: 0.5; cursor: default; }
+
+  .disclosure {
+    color: var(--muted);
+    font-size: 11.5px;
+    text-align: center;
+    margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="rig">
+  <div class="letterhead">
+    <div class="mark">Field Support Channel</div>
+    <h1>Rockwell Site Surveys</h1>
+    <p>Ask about services, coverage, or your survey booking.</p>
+  </div>
+
+  <div class="panel">
+    <div class="thread" id="thread"></div>
+    <div class="thinking" id="thinking" style="visibility:hidden;">assistant is typing…</div>
+    <form id="chatForm">
+      <input id="userInput" type="text" placeholder="Type your question…" autocomplete="off" required>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <div class="disclosure">You are chatting with an AI assistant, not a human.</div>
+</div>
+
+<script>
+  // IMPORTANT: replace this with your own Cloudflare Worker URL once you have deployed it.
+  const WORKER_URL = "https://rockwell-bot.miadireccion.workers.dev";
+
+  const thread = document.getElementById('thread');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('userInput');
+  const thinking = document.getElementById('thinking');
+
+  let history = [];
+  let refCount = 0;
+
+  function addBubble(role, text) {
+    refCount++;
+    const row = document.createElement('div');
+    row.className = 'row ' + (role === 'user' ? 'user' : 'bot');
+
+    const ref = document.createElement('div');
+    ref.className = 'ref';
+    ref.textContent = 'REF ' + String(refCount).padStart(3, '0');
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+
+    row.appendChild(ref);
+    row.appendChild(bubble);
+    thread.appendChild(row);
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  addBubble('bot', "Hello, you've reached Rockwell Site Surveys. How can I help with your survey today?");
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+
+    addBubble('user', text);
+    history.push({ role: 'user', content: text });
+    input.value = '';
+    input.disabled = true;
+    thinking.style.visibility = 'visible';
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history })
+      });
+      const data = await res.json();
+      const reply = data.reply || "Sorry, something went wrong. Please try again.";
+      addBubble('bot', reply);
+      history.push({ role: 'assistant', content: reply });
+    } catch (err) {
+      addBubble('bot', "I'm having trouble connecting right now. Please try again shortly.");
+    } finally {
+      input.disabled = false;
+      thinking.style.visibility = 'hidden';
+      input.focus();
+    }
+  });
+</script>
+
+</body>
+</html>
