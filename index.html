@@ -4,207 +4,451 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rockwell Site Surveys | Customer Support</title>
+<link rel="icon" type="image/png" href="rockwell-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --blueprint: #16305c;
-    --blueprint-line: rgba(255,255,255,0.08);
-    --paper: #f4f1e9;
-    --flag-orange: #d9622a;
-    --ink: #16305c;
-    --muted: #7d8fae;
+    --navy-deep: #0a1e33;
+    --navy: #0f2a47;
+    --navy-soft: #17395c;
+    --paper: #f7f5f0;
+    --paper-dim: #ece7db;
+    --hi-vis: #e8632c;
+    --hi-vis-dim: #c94f1e;
+    --slate: #7b8ba3;
+    --online-green: #3ecf6b;
+    --ink: #1c2733;
   }
 
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
 
   body {
     margin: 0;
     min-height: 100vh;
-    background:
-      repeating-linear-gradient(0deg, var(--blueprint-line) 0px, transparent 1px, transparent 32px, var(--blueprint-line) 33px),
-      repeating-linear-gradient(90deg, var(--blueprint-line) 0px, transparent 1px, transparent 32px, var(--blueprint-line) 33px),
-      var(--blueprint);
+    background: radial-gradient(ellipse at top, var(--navy-soft) 0%, var(--navy-deep) 65%);
     font-family: 'IBM Plex Sans', sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 32px 16px;
+    overflow-x: hidden;
+    position: relative;
   }
 
-  .rig {
-    width: 100%;
-    max-width: 520px;
+  /* ---- original background artwork: contour lines, benchmark pin, drone ---- */
+  .site-art {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.55;
+    pointer-events: none;
   }
 
-  .letterhead {
-    color: #eef2fb;
-    margin-bottom: 14px;
-  }
-
-  .letterhead .mark {
+  .caption {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.35);
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    color: var(--flag-orange);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    z-index: 1;
+  }
+
+  .brand-mark {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+  .brand-mark img {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.4);
+  }
+  .brand-mark .tag {
+    margin-top: 8px;
+    color: rgba(255,255,255,0.55);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
   }
 
-  .letterhead h1 {
-    font-size: 24px;
-    margin: 4px 0 2px;
-    font-weight: 600;
+  .page-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .letterhead p {
-    margin: 0;
-    font-size: 13px;
-    color: var(--muted);
+  /* ================= DEVICE FRAME ================= */
+  .device {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 400px;
+    background: #12100e;
+    border-radius: 30px;
+    padding: 10px;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05);
   }
 
-  .panel {
+  .screen {
     background: var(--paper);
-    border-radius: 4px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    border-radius: 22px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 62vh;
-    min-height: 440px;
+    height: 640px;
   }
 
+  /* status strip: real clock, small signal glyphs (purely decorative icons) */
+  .status-strip {
+    background: var(--navy-deep);
+    color: #cfe0f2;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 8px 18px 4px;
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.04em;
+  }
+
+  /* chat header */
+  .chat-header {
+    background: var(--navy-deep);
+    color: #fff;
+    padding: 6px 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .back-arrow {
+    width: 20px; height: 20px;
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+
+  .avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: #f7f5f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.25);
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .header-text { line-height: 1.25; }
+  .header-text .name { font-weight: 600; font-size: 15.5px; }
+  .header-text .status {
+    font-size: 12px;
+    color: #b9c8db;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--online-green);
+    display: inline-block;
+  }
+
+  /* thread area with a subtle tiled contour-doodle background */
   .thread {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 16px 12px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 3px;
+    background-color: var(--paper-dim);
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(15,42,71,0.05) 0, transparent 40%),
+      radial-gradient(circle at 85% 60%, rgba(232,99,44,0.06) 0, transparent 45%);
   }
 
-  .row { display: flex; gap: 10px; align-items: flex-end; }
-  .row.user { flex-direction: row-reverse; }
-
-  .ref {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    align-self: flex-start;
-    padding-bottom: 4px;
-    min-width: 42px;
-  }
-  .row.user .ref { text-align: right; }
+  .row { display: flex; margin: 5px 0; }
+  .row.user { justify-content: flex-end; }
+  .row.bot { justify-content: flex-start; }
 
   .bubble {
-    max-width: 78%;
-    padding: 10px 14px;
-    border-radius: 3px;
+    max-width: 86%;
+    padding: 9px 12px 7px;
     font-size: 14.5px;
-    line-height: 1.5;
+    line-height: 1.45;
     white-space: pre-wrap;
+    position: relative;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.06);
   }
 
   .row.bot .bubble {
     background: #ffffff;
-    border: 1px solid #d9d2bd;
-    color: #21283a;
-    border-bottom-left-radius: 0;
+    color: var(--ink);
+    border-radius: 4px 14px 14px 14px;
   }
 
   .row.user .bubble {
-    background: var(--flag-orange);
+    background: var(--hi-vis);
     color: #fff;
-    border-bottom-right-radius: 0;
+    border-radius: 14px 4px 14px 14px;
   }
 
-  .thinking { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); padding: 0 20px 8px; }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: 9.5px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.01em;
+  }
+  .row.bot .meta { color: #9aa6b4; }
+  .row.user .meta { color: rgba(255,255,255,0.8); }
 
+  .ticks { width: 14px; height: 10px; }
+
+  /* typing indicator */
+  .typing-row { display: none; padding: 2px 12px 8px; }
+  .typing-row.show { display: flex; }
+  .typing-bubble {
+    background: #fff;
+    border-radius: 4px 14px 14px 14px;
+    padding: 10px 14px;
+    display: flex;
+    gap: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.06);
+  }
+  .typing-bubble span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #b7c0cc;
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing-bubble span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-bubble span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* input bar */
   form {
     display: flex;
-    border-top: 1px solid #d9d2bd;
-    background: #fff;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--paper-dim);
+    border-top: 1px solid rgba(15,42,71,0.08);
   }
 
   input {
     flex: 1;
     border: none;
-    padding: 14px 16px;
+    border-radius: 22px;
+    padding: 11px 16px;
     font-size: 14.5px;
     font-family: 'IBM Plex Sans', sans-serif;
     outline: none;
-    background: transparent;
+    background: #fff;
   }
 
-  button {
+  button.send {
+    width: 40px; height: 40px;
+    border-radius: 50%;
     border: none;
-    background: var(--ink);
+    background: var(--hi-vis);
     color: #fff;
-    padding: 0 22px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
   }
+  button.send:hover { background: var(--hi-vis-dim); }
+  button.send:disabled { opacity: 0.5; cursor: default; }
 
-  button:disabled { opacity: 0.5; cursor: default; }
+  /* scrollbar tidy */
+  .thread::-webkit-scrollbar { width: 6px; }
+  .thread::-webkit-scrollbar-thumb { background: rgba(15,42,71,0.18); border-radius: 3px; }
 
-  .disclosure {
-    color: var(--muted);
-    font-size: 11.5px;
-    text-align: center;
-    margin-top: 10px;
-    font-family: 'IBM Plex Mono', monospace;
+  @media (max-width: 440px) {
+    .screen { height: 82vh; }
   }
 </style>
 </head>
 <body>
 
-<div class="rig">
-  <div class="letterhead">
-    <div class="mark">Field Support Channel</div>
-    <h1>Rockwell Site Surveys</h1>
-    <p>Ask about services, coverage, or your survey booking.</p>
+<!-- Original site-survey backdrop: contour lines, a benchmark pin, a drone. All drawn here, not sourced from any external image. -->
+<svg class="site-art" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skyFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f2a47" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0a1e33" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#skyFade)"/>
+
+  <!-- topographic contour lines -->
+  <g fill="none" stroke="#8fb3d9" stroke-width="1.1" opacity="0.35">
+    <path d="M -50 620 C 150 560, 300 660, 500 600 C 700 540, 850 640, 1250 580"/>
+    <path d="M -50 660 C 150 610, 320 700, 520 650 C 720 590, 860 690, 1250 630"/>
+    <path d="M -50 700 C 160 660, 340 730, 540 700 C 730 640, 880 730, 1250 680"/>
+    <path d="M -50 740 C 170 710, 360 760, 560 740 C 740 700, 900 770, 1250 730"/>
+    <path d="M -50 780 C 180 750, 380 800, 580 780 C 760 750, 920 800, 1250 770"/>
+  </g>
+
+  <!-- benchmark survey marker -->
+  <g transform="translate(220,430)" opacity="0.55">
+    <circle cx="0" cy="0" r="34" fill="none" stroke="#e8632c" stroke-width="2.5"/>
+    <circle cx="0" cy="0" r="5" fill="#e8632c"/>
+    <line x1="0" y1="-50" x2="0" y2="-34" stroke="#e8632c" stroke-width="2.5"/>
+    <line x1="0" y1="34" x2="0" y2="50" stroke="#e8632c" stroke-width="2.5"/>
+    <line x1="-50" y1="0" x2="-34" y2="0" stroke="#e8632c" stroke-width="2.5"/>
+    <line x1="34" y1="0" x2="50" y2="0" stroke="#e8632c" stroke-width="2.5"/>
+  </g>
+
+  <!-- simple drone silhouette -->
+  <g transform="translate(900,220)" opacity="0.5">
+    <circle cx="-40" cy="-40" r="4" fill="#cfe0f2"/>
+    <circle cx="40" cy="-40" r="4" fill="#cfe0f2"/>
+    <circle cx="-40" cy="40" r="4" fill="#cfe0f2"/>
+    <circle cx="40" cy="40" r="4" fill="#cfe0f2"/>
+    <line x1="-40" y1="-40" x2="40" y2="40" stroke="#cfe0f2" stroke-width="2"/>
+    <line x1="40" y1="-40" x2="-40" y2="40" stroke="#cfe0f2" stroke-width="2"/>
+    <rect x="-14" y="-9" width="28" height="18" rx="4" fill="#cfe0f2"/>
+  </g>
+
+  <!-- a few scattered survey stakes / points -->
+  <g stroke="#e8632c" stroke-width="1.5" opacity="0.4">
+    <line x1="700" y1="600" x2="700" y2="560"/>
+    <circle cx="700" cy="558" r="2.5" fill="#e8632c"/>
+    <line x1="980" y1="640" x2="980" y2="600"/>
+    <circle cx="980" cy="598" r="2.5" fill="#e8632c"/>
+  </g>
+</svg>
+
+<div class="page-stack">
+  <div class="brand-mark">
+    <img src="rockwell-logo.png" alt="Rockwell Site Surveys logo">
+    <div class="tag">Field Support Channel</div>
   </div>
 
-  <div class="panel">
+<div class="device">
+  <div class="screen">
+
+    <div class="status-strip">
+      <span id="clock">--:--</span>
+      <span>ROCKWELL FIELD APP</span>
+    </div>
+
+    <div class="chat-header">
+      <svg class="back-arrow" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      <div class="avatar">
+        <img src="rockwell-logo.png" alt="Rockwell Site Surveys logo">
+      </div>
+      <div class="header-text">
+        <div class="name">Rockwell Assistant</div>
+        <div class="status"><span class="dot"></span> AI Assistant &middot; Online</div>
+      </div>
+    </div>
+
     <div class="thread" id="thread"></div>
-    <div class="thinking" id="thinking" style="visibility:hidden;">assistant is typing…</div>
-    <form id="chatForm">
-      <input id="userInput" type="text" placeholder="Type your question…" autocomplete="off" required>
-      <button type="submit">Send</button>
-    </form>
-  </div>
 
-  <div class="disclosure">You are chatting with an AI assistant, not a human.</div>
+    <div class="typing-row" id="typingRow">
+      <div class="typing-bubble"><span></span><span></span><span></span></div>
+    </div>
+
+    <form id="chatForm">
+      <input id="userInput" type="text" placeholder="Message Rockwell Assistant" autocomplete="off" required>
+      <button type="submit" class="send" aria-label="Send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff" stroke="none"/>
+        </svg>
+      </button>
+    </form>
+
+  </div>
+</div>
 </div>
 
 <script>
-  // IMPORTANT: replace this with your own Cloudflare Worker URL once you have deployed it.
+  // IMPORTANT: this must be your real Cloudflare Worker URL.
   const WORKER_URL = "https://rockwell-bot.miadireccion.workers.dev";
 
   const thread = document.getElementById('thread');
   const form = document.getElementById('chatForm');
   const input = document.getElementById('userInput');
-  const thinking = document.getElementById('thinking');
+  const typingRow = document.getElementById('typingRow');
+  const clockEl = document.getElementById('clock');
 
   let history = [];
-  let refCount = 0;
+
+  function updateClock() {
+    const now = new Date();
+    clockEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  const WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function timeNow() {
+    const d = new Date();
+    const weekday = WEEKDAYS[d.getDay()];
+    const day = d.getDate();
+    const month = MONTHS[d.getMonth()];
+    const year = d.getFullYear();
+    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `${weekday} ${day} ${month} ${year} \u00b7 ${time}`;
+  }
+
+  function ticksSVG() {
+    return `<svg class="ticks" viewBox="0 0 16 12" fill="none" stroke="#cfe9ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="1 6 5 10 11 2"/>
+      <polyline points="6 6 10 10 16 2"/>
+    </svg>`;
+  }
 
   function addBubble(role, text) {
-    refCount++;
     const row = document.createElement('div');
     row.className = 'row ' + (role === 'user' ? 'user' : 'bot');
 
-    const ref = document.createElement('div');
-    ref.className = 'ref';
-    ref.textContent = 'REF ' + String(refCount).padStart(3, '0');
-
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    bubble.textContent = text;
 
-    row.appendChild(ref);
+    const textNode = document.createElement('div');
+    textNode.textContent = text;
+    bubble.appendChild(textNode);
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.innerHTML = timeNow() + (role === 'user' ? ticksSVG() : '');
+    bubble.appendChild(meta);
+
     row.appendChild(bubble);
     thread.appendChild(row);
     thread.scrollTop = thread.scrollHeight;
@@ -221,7 +465,8 @@
     history.push({ role: 'user', content: text });
     input.value = '';
     input.disabled = true;
-    thinking.style.visibility = 'visible';
+    typingRow.classList.add('show');
+    thread.scrollTop = thread.scrollHeight;
 
     try {
       const res = await fetch(WORKER_URL, {
@@ -237,7 +482,7 @@
       addBubble('bot', "I'm having trouble connecting right now. Please try again shortly.");
     } finally {
       input.disabled = false;
-      thinking.style.visibility = 'hidden';
+      typingRow.classList.remove('show');
       input.focus();
     }
   });
